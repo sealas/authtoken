@@ -18,7 +18,7 @@ defmodule AuthToken.Mixfile do
   end
 
   def application do
-    [applications: [:logger],
+    [applications: [:logger, :plug],
     env: [
       timeout: 86400,
       refresh: 1800
