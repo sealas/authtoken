@@ -17,11 +17,12 @@ defmodule AuthToken.Mixfile do
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
-    [
-      extra_applications: [:logger]
-    ]
+    [applications: [:logger],
+    env: [
+      timeout: 86400,
+      refresh: 1800
+    ]]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
