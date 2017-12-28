@@ -3,8 +3,17 @@ defmodule AuthToken do
   Simplified encrypted authentication tokens using JWE.
 
   Configuration needed:
-  config :authtoken,
-    token_key: PUT_KEY_HERE
+
+    config :authtoken,
+      token_key: PUT_KEY_HERE
+
+  Generate a token for your user after successful authentication like this:
+
+  ## Examples
+
+      token_content = %{userid: user.id}
+
+      token = AuthToken.generate_token(token_content)
   """
 
   @doc """

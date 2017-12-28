@@ -1,6 +1,20 @@
 defmodule AuthToken.Plug do
   @moduledoc """
   Plugs for AuthToken
+
+  ## Examples
+
+      import AuthToken.Plug
+
+      pipeline :auth do
+        plug :verify_token
+      end
+
+      scope "/protected/route", MyApp do
+        pipe_through :auth
+
+        resources "/", DoNastyStuffController
+      end
   """
 
   import Plug.Conn
