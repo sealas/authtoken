@@ -4,6 +4,8 @@ Simplified encrypted authentication tokens using JWE.
 
 This package provides you with a simplified headerless and encrypted JWT. It provides you with sane defaults (AES128) and almost no configuration to counteract JWTs overblown standard. See this [blog post](https://sealas.at/blog/2017-12/tokens-cookies-and-sessions-an-auth-story-part-1/) for more information.
 
+Example integration here in [Sealas](https://github.com/Brainsware/sealas)
+
 ## Installation
 
 1. Add `authtoken` to your list of dependencies in `mix.exs`:
