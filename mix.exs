@@ -1,19 +1,30 @@
 defmodule AuthToken.Mixfile do
   use Mix.Project
 
+  @version "0.1.0"
+
+  @maintainers ["Daniel Khalil"]
+  @description """
+  Simplified encrypted authentication tokens using JWE.
+  """
+  
+  @github "https://github.com/Brainsware/authtoken"
+
   def project do
     [
       name: "AuthToken",
       app: :authtoken,
-      version: "0.1.0",
+      version: @version,
+      description: @description,
+      maintainers: @maintainers,
+      source_url: @github,
+      homepage_url: "https://sealas.at",
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
-      deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env),
+      deps: deps(),
       docs: docs(),
-      maintainers: ["Daniel Khalil"],
-      source_url: "https://github.com/Brainsware/authtoken",
-      homepage_url: "https://sealas.at",
+      package: package(),
     ]
   end
 
@@ -43,6 +54,14 @@ defmodule AuthToken.Mixfile do
   defp docs do
     [
       extras: ["README.md"]
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: @maintainers,
+      links: %{github: @github},
+      licenses: ["Apache 2.0"],
     ]
   end
 end
