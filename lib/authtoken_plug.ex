@@ -26,9 +26,11 @@ defmodule AuthToken.Plug do
   """
   @spec verify_token(Plug.Conn.t, any) :: Plug.Conn.t
   def verify_token(conn, _options) do
-    crypto_token = get_req_header(conn, "authorization")
+    token_header = get_req_header(conn, "authorization") |> List.first
 
-    case AuthToken.decrypt_token(List.first(crypto_token)) do
+    crypto_token = if token_header, do: Regex.run(~r/(bearer\: )?(.+)/, token_header) |> List.last
+
+    case AuthToken.decrypt_token(crypto_token) do
       {:error} ->
         conn
         |> put_resp_content_type("application/json")
