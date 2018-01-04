@@ -1,13 +1,13 @@
 defmodule AuthToken.Mixfile do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.1.1"
 
   @maintainers ["Daniel Khalil"]
   @description """
   Simplified encrypted authentication tokens using JWE.
   """
-  
+
   @github "https://github.com/Brainsware/authtoken"
 
   def project do
