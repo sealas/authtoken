@@ -3,12 +3,21 @@ defmodule AuthTokenTest do
 
   @user %{id: 123}
 
+  describe "keys" do
+    test "generate_key/0 returns a valid AES128 key" do
+      {:ok, key} = AuthToken.generate_key()
+
+      assert byte_size(key) == 16
+    end
+  end
+
   describe "tokens" do
     test "token generation" do
       token = AuthToken.generate_token(@user)
 
       assert {:ok, user} = AuthToken.decrypt_token(token)
       assert user["id"] == @user.id
+      assert user["ct"]
     end
   end
 
@@ -34,13 +43,14 @@ defmodule AuthTokenTest do
 
       Application.put_env(:authtoken, :timeout, -1)
 
-      assert Application.get_env(:authtoken, :timeout) == -1
-
       conn = conn
       |> put_req_header("authorization", "bearer: " <> token)
       |> AuthToken.Plug.verify_token([])
 
       assert json_response(conn, 401) == %{"error" => "timeout"}
+
+      # restore old timeout value
+      Application.put_env(:authtoken, :timeout, 86400)
     end
 
     test "granting access for correct token", %{conn: conn} do
