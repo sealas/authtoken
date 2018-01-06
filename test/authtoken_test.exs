@@ -3,6 +3,11 @@ defmodule AuthTokenTest do
 
   @user %{id: 123}
 
+  setup do
+    Application.put_env(:authtoken, :timeout, 86400)
+    Application.put_env(:authtoken, :refresh, 1800)
+  end
+
   describe "keys" do
     test "generate_key/0 returns a valid AES128 key" do
       {:ok, key} = AuthToken.generate_key()
@@ -13,11 +18,37 @@ defmodule AuthTokenTest do
 
   describe "tokens" do
     test "token generation" do
-      token = AuthToken.generate_token(@user)
+      {:ok, encrypted_token} = AuthToken.generate_token(@user)
 
-      assert {:ok, user} = AuthToken.decrypt_token(token)
-      assert user["id"] == @user.id
-      assert user["ct"]
+      assert {:ok, token} = AuthToken.decrypt_token(encrypted_token)
+      assert token["id"] == @user.id
+
+      refute AuthToken.is_timedout?(token)
+      refute AuthToken.needs_refresh?(token)
+
+      Application.put_env(:authtoken, :timeout, -1)
+      Application.put_env(:authtoken, :refresh, -1)
+
+      assert AuthToken.is_timedout?(token)
+      assert AuthToken.needs_refresh?(token)
+    end
+
+    test "token regeneration" do
+      {:ok, encrypted_token} = AuthToken.generate_token(@user)
+      {:ok, token} = AuthToken.decrypt_token(encrypted_token)
+
+      assert AuthToken.regenerate_token(token) == {:error, :stillfresh}
+
+      :timer.sleep(1000)
+
+      Application.put_env(:authtoken, :refresh, -1)
+      assert {:ok, fresh_token} = AuthToken.regenerate_token(token)
+
+      {:ok, token} = AuthToken.decrypt_token(fresh_token)
+      assert token["ct"] < token["rt"]
+
+      Application.put_env(:authtoken, :timeout, -1)
+      assert AuthToken.regenerate_token(token) == {:error, :timedout}
     end
   end
 
@@ -37,7 +68,7 @@ defmodule AuthTokenTest do
     end
 
     test "denying access for expired token", %{conn: conn} do
-      token = AuthToken.generate_token(@user)
+      {:ok, token} = AuthToken.generate_token(@user)
 
       assert Application.get_env(:authtoken, :timeout) == 86400
 
@@ -48,13 +79,10 @@ defmodule AuthTokenTest do
       |> AuthToken.Plug.verify_token([])
 
       assert json_response(conn, 401) == %{"error" => "timeout"}
-
-      # restore old timeout value
-      Application.put_env(:authtoken, :timeout, 86400)
     end
 
     test "granting access for correct token", %{conn: conn} do
-      token = AuthToken.generate_token(@user)
+      {:ok, token} = AuthToken.generate_token(@user)
 
       conn = conn
       |> put_req_header("authorization", "bearer: " <> token)

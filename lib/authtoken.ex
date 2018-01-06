@@ -17,21 +17,6 @@ defmodule AuthToken do
   """
 
   @doc """
-  Generates an encrypted auth token.
-
-  Contains an encoded version of the provided map, plus a timestamp for timeout.
-  """
-  @spec generate_token(map) :: String.t
-  def generate_token(user_data) do
-    token_content = %{ct: DateTime.to_unix(DateTime.utc_now())} |> Enum.into(user_data)
-
-    jwt = JOSE.JWT.encrypt(get_jwk(), get_jwe(), token_content) |> JOSE.JWE.compact |> elem(1)
-
-    # Remove JWT header
-    Regex.run(~r/.+?\.(.+)/, jwt) |> List.last
-  end
-
-  @doc """
   Generate a random key for AES128
 
   ## Examples
@@ -42,6 +27,52 @@ defmodule AuthToken do
   @spec generate_key() :: {:ok, binary}
   def generate_key do
     {:ok, :crypto.strong_rand_bytes(16)}
+  end
+
+  @doc """
+  Generates an encrypted auth token.
+
+  Contains an encoded version of the provided map, plus a timestamp for timeout and refresh.
+  """
+  @spec generate_token(map) :: String.t
+  def generate_token(user_data) do
+    base_data = %{
+      "ct" => DateTime.to_unix(DateTime.utc_now()),
+      "rt" => DateTime.to_unix(DateTime.utc_now())}
+
+    token_content = user_data |> Enum.into(base_data)
+
+    jwt = JOSE.JWT.encrypt(get_jwk(), get_jwe(), token_content) |> JOSE.JWE.compact |> elem(1)
+
+    # Remove JWT header
+    {:ok, Regex.run(~r/.+?\.(.+)/, jwt) |> List.last}
+  end
+
+  @spec regenerate_token(map) :: String.t
+  def regenerate_token(token) do
+    cond do
+      is_timedout?(token) ->    {:error, :timedout}
+      !needs_refresh?(token) -> {:error, :stillfresh}
+
+      needs_refresh?(token) ->
+        token = %{"rt" => DateTime.to_unix(DateTime.utc_now())} |> Enum.into(token)
+
+        generate_token(token)
+    end
+  end
+
+  @spec is_timedout?(map) :: boolean
+  def is_timedout?(token) do
+    {:ok, ct} = DateTime.from_unix(token["ct"])
+
+    DateTime.diff(DateTime.utc_now(), ct) > get_config(:timeout)
+  end
+
+  @spec needs_refresh?(map) :: boolean
+  def needs_refresh?(token) do
+    {:ok, rt} = DateTime.from_unix(token["rt"])
+
+    DateTime.diff(DateTime.utc_now(), rt) > get_config(:refresh)
   end
 
   @doc """
