@@ -43,12 +43,8 @@ defmodule AuthToken.Plug do
 
   @spec check_token_time(Plug.Conn.t, map) :: Plug.Conn.t
   defp check_token_time(conn, token) do
-    timeout = AuthToken.get_config(:timeout)
-
-    {:ok, ct} = DateTime.from_unix(token["ct"])
-
     cond do
-      DateTime.diff(DateTime.utc_now(), ct) > timeout ->
+      AuthToken.is_timedout?(token) ->
         conn
         |> put_resp_content_type("application/json")
         |> send_resp(:unauthorized, "{\"error\": \"timeout\"}")
