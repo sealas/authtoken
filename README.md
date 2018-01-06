@@ -13,7 +13,7 @@ Example integration here in [Sealas](https://github.com/Brainsware/sealas)
 ```elixir
 def deps do
   [
-    {:authtoken, "~> 0.1.0"}
+    {:authtoken, "~> 0.2.0"}
   ]
 end
 ```
