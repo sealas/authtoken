@@ -49,6 +49,11 @@ defmodule AuthToken.Plug do
         |> put_resp_content_type("application/json")
         |> send_resp(:unauthorized, "{\"error\": \"timeout\"}")
         |> halt
+      AuthToken.needs_refresh?(token) ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(:unauthorized, "{\"error\": \"needs_refresh\"}")
+        |> halt
       true ->
         conn
     end
