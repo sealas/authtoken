@@ -48,8 +48,22 @@ defmodule AuthToken do
     {:ok, Regex.run(~r/.+?\.(.+)/, jwt) |> List.last}
   end
 
-  @spec regenerate_token(map) :: String.t
-  def regenerate_token(token) do
+  @doc """
+  Checks a token and refreshes if necessary.
+
+  ## Examples
+
+      case AuthToken.refresh_token(token) do
+        {:error, :timedout} ->
+          # Redirect to login
+        {:error, :stillfresh} ->
+          # Do nothing
+        {:ok, token} ->
+          # Check credentials and send back new token
+      end
+  """
+  @spec refresh_token(map) :: {:ok, String.t} | {:error, :stillfresh} | {:error, :timedout}
+  def refresh_token(token) when is_map(token) do
     cond do
       is_timedout?(token) ->    {:error, :timedout}
       !needs_refresh?(token) -> {:error, :stillfresh}
@@ -77,6 +91,9 @@ defmodule AuthToken do
     DateTime.diff(DateTime.utc_now(), ct) > get_config(:timeout)
   end
 
+  @doc """
+  Check if token is stale and needs to be refreshed
+  """
   @spec needs_refresh?(map) :: boolean
   def needs_refresh?(token) do
     {:ok, rt} = DateTime.from_unix(token["rt"])

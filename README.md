@@ -39,10 +39,30 @@ Generate a token for your user after successful authentication like this:
 ```elixir
 token_content = %{userid: user.id}
 
-token = AuthToken.generate_token(token_content)
+{:ok, token} = AuthToken.generate_token(token_content)
 ```
 
 then pass it on to your view.
+
+### Refreshing
+
+By default a token should be refreshed every 30 minutes, using `AuthToken.refresh_token/1`.
+You can pass either a decrypted token, or simply the token you get from the client directly.
+This will extend the lifetime of the token for another 30 minutes until it expires completely.
+You can use this opportunity to check if the user's credentials haven't been revoked in the meantime.
+
+```elixir
+case AuthToken.refresh_token(token) do
+  {:error, :timedout} ->
+    # Redirect to login
+  {:error, :stillfresh} ->
+    # Do nothing
+  {:ok, token} ->
+    # Check credentials and send back new token
+end
+```
+
+### Plug
 
 For verification you can use the plug `AuthToken.Plug.verify_token`.
 
@@ -69,3 +89,7 @@ More optional configuration options
 ### timeout (default: 86400)
 
 Denotes the lifetime of a token in seconds. After it expires you need to generate a new one.
+
+### refresh (default: 1800)
+
+The total duration after which the token needs to be refreshd
