@@ -34,7 +34,7 @@ defmodule AuthToken do
 
   Contains an encoded version of the provided map, plus a timestamp for timeout and refresh.
   """
-  @spec generate_token(map) :: String.t
+  @spec generate_token(map) :: {:ok, String.t}
   def generate_token(user_data) do
     base_data = %{
       "ct" => DateTime.to_unix(DateTime.utc_now()),
