@@ -33,22 +33,22 @@ defmodule AuthTokenTest do
       assert AuthToken.needs_refresh?(token)
     end
 
-    test "token regeneration" do
+    test "token refresh" do
       {:ok, encrypted_token} = AuthToken.generate_token(@user)
       {:ok, token} = AuthToken.decrypt_token(encrypted_token)
 
-      assert AuthToken.regenerate_token(token) == {:error, :stillfresh}
+      assert AuthToken.refresh_token(token) == {:error, :stillfresh}
 
       :timer.sleep(1000)
 
       Application.put_env(:authtoken, :refresh, -1)
-      assert {:ok, fresh_token} = AuthToken.regenerate_token(token)
+      assert {:ok, fresh_token} = AuthToken.refresh_token(token)
 
       {:ok, token} = AuthToken.decrypt_token(fresh_token)
       assert token["ct"] < token["rt"]
 
       Application.put_env(:authtoken, :timeout, -1)
-      assert AuthToken.regenerate_token(token) == {:error, :timedout}
+      assert AuthToken.refresh_token(token) == {:error, :timedout}
     end
   end
 
@@ -67,14 +67,21 @@ defmodule AuthTokenTest do
       assert json_response(conn, 401)
     end
 
-    test "denying access for expired token", %{conn: conn} do
+    test "denying access for stale and expired token", %{conn: conn} do
       {:ok, token} = AuthToken.generate_token(@user)
 
-      assert Application.get_env(:authtoken, :timeout) == 86400
+      Application.put_env(:authtoken, :refresh, -1)
+
+      conn = conn
+      |> put_req_header("authorization", "bearer: " <> token)
+      |> AuthToken.Plug.verify_token([])
+
+      assert json_response(conn, 401) == %{"error" => "needs_refresh"}
 
       Application.put_env(:authtoken, :timeout, -1)
 
       conn = conn
+      |> recycle()
       |> put_req_header("authorization", "bearer: " <> token)
       |> AuthToken.Plug.verify_token([])
 
