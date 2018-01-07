@@ -61,6 +61,15 @@ defmodule AuthToken do
     end
   end
 
+  @spec refresh_token(map) :: {:ok, String.t} | {:error, :stillfresh} | {:error, :timedout}
+  def refresh_token(token) when is_binary(token) do
+    decrypt_token(token)
+    |> refresh_token
+  end
+
+  @doc """
+  Check if token is timedout and not valid anymore
+  """
   @spec is_timedout?(map) :: boolean
   def is_timedout?(token) do
     {:ok, ct} = DateTime.from_unix(token["ct"])
