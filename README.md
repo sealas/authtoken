@@ -1,5 +1,7 @@
 # Authtoken
 
+[![Travis CI Build Status](https://travis-ci.org/Brainsware/authtoken.svg?branch=master)](https://travis-ci.org/Brainsware/authtoken)
+
 Simplified encrypted authentication tokens using JWE.
 
 This package provides you with a simplified headerless and encrypted JWT. It provides you with sane defaults (AES128) and almost no configuration to counteract JWTs overblown standard. See this [blog post](https://sealas.at/blog/2017-12/tokens-cookies-and-sessions-an-auth-story-part-1/) for more information.
