@@ -77,7 +77,9 @@ defmodule AuthToken do
 
   @spec refresh_token(String.t) :: {:ok, String.t} | {:error, :stillfresh} | {:error, :timedout}
   def refresh_token(token) when is_binary(token) do
-    decrypt_token(token)
+    {:ok, token} = decrypt_token(token)
+
+    token
     |> refresh_token
   end
 

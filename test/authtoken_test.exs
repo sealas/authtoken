@@ -26,17 +26,11 @@ defmodule AuthTokenTest do
       refute AuthToken.is_timedout?(token)
       refute AuthToken.needs_refresh?(token)
 
-      refute AuthToken.is_timedout?(encrypted_token)
-      refute AuthToken.needs_refresh?(encrypted_token)
-
       Application.put_env(:authtoken, :timeout, -1)
       Application.put_env(:authtoken, :refresh, -1)
 
       assert AuthToken.is_timedout?(token)
       assert AuthToken.needs_refresh?(token)
-
-      assert AuthToken.is_timedout?(encrypted_token)
-      assert AuthToken.needs_refresh?(encrypted_token)
     end
 
     test "token refresh" do
@@ -44,11 +38,13 @@ defmodule AuthTokenTest do
       {:ok, token} = AuthToken.decrypt_token(encrypted_token)
 
       assert AuthToken.refresh_token(token) == {:error, :stillfresh}
+      assert AuthToken.refresh_token(encrypted_token) == {:error, :stillfresh}
 
       :timer.sleep(1000)
 
       Application.put_env(:authtoken, :refresh, -1)
       assert {:ok, fresh_token} = AuthToken.refresh_token(token)
+      assert {:ok, fresh_token} = AuthToken.refresh_token(encrypted_token)
 
       {:ok, token} = AuthToken.decrypt_token(fresh_token)
       assert token["ct"] < token["rt"]
