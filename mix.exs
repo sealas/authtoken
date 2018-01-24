@@ -47,6 +47,7 @@ defmodule AuthToken.Mixfile do
       {:phoenix, "~> 1.3"},
 
       {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
+      {:stream_data, "~> 0.1", only: [:dev, :test]},
       {:ex_doc, "~> 0.18", only: :dev}
     ]
   end
