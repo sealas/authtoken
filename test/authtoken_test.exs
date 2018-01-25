@@ -1,5 +1,8 @@
 defmodule AuthTokenTest do
   use ConnCase
+  import StreamData
+  import ExUnitProperties
+
 
   @user %{id: 123}
 
@@ -9,10 +12,12 @@ defmodule AuthTokenTest do
   end
 
   describe "keys" do
-    test "generate_key/0 returns a valid AES128 key" do
-      {:ok, key} = AuthToken.generate_key()
+    property "generate_key/0 returns a valid AES128 key" do
+      authtoken_key_generator = map(AuthToken.generate_key, fn {x} -> x end)
+      check all {:ok, key} <- authtoken_key_generator do
 
-      assert byte_size(key) == 16
+        assert byte_size(key) == 16
+      end
     end
   end
 

@@ -28,8 +28,8 @@ defmodule AuthToken.Mixfile do
     ]
   end
 
-  def application do
-    [applications: [:logger, :plug],
+  def extra_application do
+    [applications: [:logger],
     env: [
       timeout: 86400,
       refresh: 1800
