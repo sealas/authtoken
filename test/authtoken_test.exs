@@ -5,9 +5,11 @@ defmodule AuthTokenTest do
   @user %{id: 123}
 
   defp gen_authtoken_key() do
-    StreamData.map(StreamData.list_of(StreamData.constant(:unused_tick)), fn _ ->
-      AuthToken.generate_key()
-    end)
+    StreamData.unshrinkable(
+      StreamData.bind(StreamData.constant(:unused), fn _ ->
+        StreamData.constant(AuthToken.generate_key())
+      end)
+    )
   end
 
   setup do
