@@ -1,10 +1,14 @@
 defmodule AuthTokenTest do
   use ConnCase
-  import StreamData
   import ExUnitProperties
 
-
   @user %{id: 123}
+
+  defp gen_authtoken_key() do
+    StreamData.map(StreamData.list_of(StreamData.constant(:unused_tick)), fn _ ->
+      AuthToken.generate_key()
+    end)
+  end
 
   setup do
     Application.put_env(:authtoken, :timeout, 86400)
@@ -13,9 +17,8 @@ defmodule AuthTokenTest do
 
   describe "keys" do
     property "generate_key/0 returns a valid AES128 key" do
-      authtoken_key_generator = map(AuthToken.generate_key, fn {x} -> x end)
-      check all {:ok, key} <- authtoken_key_generator do
-
+      check all authtoken_key <- gen_authtoken_key() do
+        {:ok, key} = authtoken_key
         assert byte_size(key) == 16
       end
     end
