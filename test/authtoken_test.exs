@@ -26,6 +26,16 @@ defmodule AuthTokenTest do
     end
   end
 
+  describe "unique keys" do
+    property "generate_key/0 always returns a unique AES128 key" do
+      # n.b.: not using `check all` here, since that would require we we
+      # construct a StreamData list. but all we want to do is ensure a large list is unique
+      authtoken_keys = Enum.take(gen_authtoken_key(), 9_999)
+
+      assert authtoken_keys == Enum.uniq(authtoken_keys)
+    end
+  end
+
   describe "tokens" do
     test "token generation" do
       {:ok, encrypted_token} = AuthToken.generate_token(@user)
