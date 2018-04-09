@@ -28,7 +28,7 @@ defmodule AuthToken.Plug do
   def verify_token(conn, _options) do
     token_header = get_req_header(conn, "authorization") |> List.first
 
-    crypto_token = if token_header, do: Regex.run(~r/(bearer\: )?(.+)/, token_header) |> List.last
+    crypto_token = if token_header, do: Regex.run(~r/(bearer\:? )?(.+)/, token_header) |> List.last
 
     case AuthToken.decrypt_token(crypto_token) do
       {:error} ->

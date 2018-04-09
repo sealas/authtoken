@@ -98,6 +98,12 @@ defmodule AuthTokenTest do
       |> AuthToken.Plug.verify_token([])
 
       assert conn.status != 401
+
+      conn = conn
+      |> put_req_header("authorization", "bearer " <> token)
+      |> AuthToken.Plug.verify_token([])
+
+      assert conn.status != 401
     end
   end
 end
