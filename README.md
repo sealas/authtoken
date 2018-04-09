@@ -15,7 +15,7 @@ Example integration here in [Sealas](https://github.com/Brainsware/sealas)
 ```elixir
 def deps do
   [
-    {:authtoken, "~> 0.2.1"}
+    {:authtoken, "~> 0.2.2"}
   ]
 end
 ```
