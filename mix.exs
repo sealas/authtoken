@@ -28,8 +28,8 @@ defmodule AuthToken.Mixfile do
     ]
   end
 
-  def application do
-    [applications: [:logger, :plug],
+  def extra_application do
+    [applications: [:logger],
     env: [
       timeout: 86400,
       refresh: 1800
@@ -47,6 +47,7 @@ defmodule AuthToken.Mixfile do
       {:phoenix, "~> 1.3"},
 
       {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
+      {:stream_data, "~> 0.1", only: [:dev, :test]},
       {:ex_doc, "~> 0.18", only: :dev}
     ]
   end

@@ -1,57 +1,127 @@
 defmodule AuthTokenTest do
-  use ConnCase
+  use ConnCase, async: true
+  import ExUnitProperties
 
   @user %{id: 123}
 
-  setup do
+  defp gen_authtoken_key() do
+    gen_ticker = fn _ ->
+      StreamData.constant(AuthToken.generate_key())
+    end
+
+    StreamData.constant(:unused)
+    |> StreamData.bind(gen_ticker)
+    |> StreamData.unshrinkable()
+  end
+
+  defp gen_usermap() do
+    StreamData.fixed_map(%{ id: StreamData.integer() })
+  end
+
+  defp gen_authtoken_token(user) do
+    gen_ticker = fn user ->
+      StreamData.constant(AuthToken.generate_token(user))
+    end
+
+    StreamData.constant(user)
+    |> StreamData.bind(gen_ticker)
+    |> StreamData.unshrinkable()
+  end
+
+  defp gen_authtoken_stale_token(user) do
+    gen_ticker = fn user ->
+      StreamData.constant(AuthToken.generate_token(user))
+    end
+
+    StreamData.constant(user)
+    |> StreamData.bind(gen_ticker)
+    |> StreamData.unshrinkable()
+  end
+
+  defp reset_timeout_env() do
     Application.put_env(:authtoken, :timeout, 86400)
     Application.put_env(:authtoken, :refresh, 1800)
   end
 
-  describe "keys" do
-    test "generate_key/0 returns a valid AES128 key" do
-      {:ok, key} = AuthToken.generate_key()
+  setup do
+    reset_timeout_env()
+  end
 
-      assert byte_size(key) == 16
+  describe "keys" do
+    property "generate_key/0 returns a valid AES128 key" do
+      check all authtoken_key <- gen_authtoken_key() do
+        {:ok, key} = authtoken_key
+        assert byte_size(key) == 16
+      end
     end
   end
 
-  describe "tokens" do
-    test "token generation" do
-      {:ok, encrypted_token} = AuthToken.generate_token(@user)
+  describe "unique keys" do
+    property "generate_key/0 always returns a unique AES128 key" do
+      # n.b.: not using `check all` here, since that would require we we
+      # construct a StreamData list. but all we want to do is ensure a large list is unique
+      authtoken_keys = Enum.take(gen_authtoken_key(), 99_999)
 
-      assert {:ok, token} = AuthToken.decrypt_token(encrypted_token)
-      assert token["id"] == @user.id
+      assert authtoken_keys == Enum.uniq(authtoken_keys)
+    end
+  end
 
-      refute AuthToken.is_timedout?(token)
-      refute AuthToken.needs_refresh?(token)
+  describe "token properties (and life-cycle)" do
+    property "generate_token/1 and decrypt_token/1 are reversible" do
+      check all user <- gen_usermap(),
+        authtoken_token <- gen_authtoken_token(user) do
 
-      Application.put_env(:authtoken, :timeout, -1)
-      Application.put_env(:authtoken, :refresh, -1)
-
-      assert AuthToken.is_timedout?(token)
-      assert AuthToken.needs_refresh?(token)
+        {:ok, encrypted_token} = authtoken_token
+        assert {:ok, token} = AuthToken.decrypt_token(encrypted_token)
+        assert token["id"] == user.id
+      end
     end
 
-    test "token refresh" do
-      {:ok, encrypted_token} = AuthToken.generate_token(@user)
-      {:ok, token} = AuthToken.decrypt_token(encrypted_token)
+    property "authtoken can timeout" do
+      check all user <- gen_usermap(),
+        authtoken_token <- gen_authtoken_token(user) do
 
-      assert AuthToken.refresh_token(token) == {:error, :stillfresh}
-      assert AuthToken.refresh_token(encrypted_token) == {:error, :stillfresh}
+        reset_timeout_env()
 
-      :timer.sleep(1000)
+        {:ok, encrypted_token} = authtoken_token
+        {:ok, token} = AuthToken.decrypt_token(encrypted_token)
 
-      Application.put_env(:authtoken, :refresh, -1)
-      assert {:ok, fresh_token} = AuthToken.refresh_token(token)
-      assert {:ok, fresh_token} = AuthToken.refresh_token(encrypted_token)
+        refute AuthToken.is_timedout?(token)
+        refute AuthToken.needs_refresh?(token)
 
-      {:ok, token} = AuthToken.decrypt_token(fresh_token)
-      assert token["ct"] < token["rt"]
+        Application.put_env(:authtoken, :timeout, -1)
+        Application.put_env(:authtoken, :refresh, -1)
 
-      Application.put_env(:authtoken, :timeout, -1)
-      assert AuthToken.refresh_token(token) == {:error, :timedout}
+        assert AuthToken.is_timedout?(token)
+        assert AuthToken.needs_refresh?(token)
+      end
     end
+
+    # property "token refresh" do
+    #   check all user <- gen_usermap(),
+    #     authtoken_token <- gen_authtoken_token(user) do
+
+    #     reset_timeout_env()
+
+    #     {:ok, encrypted_token} = authtoken_token
+    #     {:ok, token} = AuthToken.decrypt_token(encrypted_token)
+
+    #     assert AuthToken.refresh_token(token) == {:error, :stillfresh}
+    #     assert AuthToken.refresh_token(encrypted_token) == {:error, :stillfresh}
+
+    #     :timer.sleep(1000)
+
+    #     Application.put_env(:authtoken, :refresh, -1)
+    #     assert {:ok, fresh_token} = AuthToken.refresh_token(token)
+    #     assert {:ok, fresh_token} = AuthToken.refresh_token(encrypted_token)
+
+    #     {:ok, token} = AuthToken.decrypt_token(fresh_token)
+    #     assert token["ct"] < token["rt"]
+
+    #     Application.put_env(:authtoken, :timeout, -1)
+    #     assert AuthToken.refresh_token(token) == {:error, :timedout}
+    #   end
+    # end
   end
 
   describe "plug verifying and testing tokens" do
