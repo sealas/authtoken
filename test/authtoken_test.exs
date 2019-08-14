@@ -105,5 +105,16 @@ defmodule AuthTokenTest do
 
       assert conn.status != 401
     end
+
+    test "decrypting token from conn", %{conn: conn} do
+      {:ok, token} = AuthToken.generate_token(@user)
+
+      conn = conn
+      |> put_req_header("authorization", "bearer: " <> token)
+
+      {:ok, decrypted_token} = AuthToken.decrypt_token(conn)
+
+      assert decrypted_token["id"] == @user.id
+    end
   end
 end

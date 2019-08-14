@@ -108,9 +108,18 @@ defmodule AuthToken do
 
   Format "bearer: tokengoeshere" will be accepted and parsed out.
   """
+  @spec decrypt_token(Plug.Conn.t) :: {:ok, String.t} | {:error}
+  def decrypt_token(%Plug.Conn{} = conn) do
+    token_header = Plug.Conn.get_req_header(conn, "authorization") |> List.first
+
+    crypto_token = if token_header, do: Regex.run(~r/(bearer\:? )?(.+)/, token_header) |> List.last
+
+    decrypt_token(crypto_token)
+  end
+
   @spec decrypt_token(String.t) :: {:ok, String.t} | {:error}
   def decrypt_token(headless_token) when is_binary(headless_token) do
-    header = get_jwe() |> JOSE.Poison.lexical_encode! |> :base64url.encode
+    header = get_jwe() |> OJSON.encode! |> :base64url.encode
 
     auth_token = header <> "." <> headless_token
 
