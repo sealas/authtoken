@@ -1,7 +1,7 @@
 defmodule AuthToken.Mixfile do
   use Mix.Project
 
-  @version "0.2.2"
+  @version "0.3.0"
 
   @maintainers ["Daniel Khalil"]
   @description """
@@ -19,7 +19,7 @@ defmodule AuthToken.Mixfile do
       maintainers: @maintainers,
       source_url: @github,
       homepage_url: "https://sealas.at",
-      elixir: "~> 1.5",
+      elixir: "~> 1.9",
       start_permanent: Mix.env == :prod,
       elixirc_paths: elixirc_paths(Mix.env),
       deps: deps(),
@@ -42,10 +42,12 @@ defmodule AuthToken.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:jose, "~> 1.8"},
-      {:plug, "~> 1.4"},
-      {:phoenix, "~> 1.3"},
+      {:jose, "~> 1.9"},
+      {:ojson, "~> 1.0"},
+      {:plug, "~> 1.8"},
+      {:phoenix, "~> 1.4"},
 
+      {:poison, "~> 1.0", only: :test},
       {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.18", only: :dev}
     ]
