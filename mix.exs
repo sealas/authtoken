@@ -49,7 +49,7 @@ defmodule AuthToken.Mixfile do
 
       {:poison, "~> 1.0", only: :test},
       {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.18", only: :dev}
+      {:ex_doc, "~> 0.21", only: :dev}
     ]
   end
 
