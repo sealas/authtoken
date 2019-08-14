@@ -46,6 +46,16 @@ token_content = %{userid: user.id}
 
 then pass it on to your view.
 
+### Get the content / Decrypting
+
+The most likely use-case is going to be you wanting to decrypt a token you have received in the request headers.
+
+```elixir
+{:ok, token} = AuthToken.decrypt_token(conn)
+
+user_id = token.userid
+```
+
 ### Refreshing
 
 By default a token should be refreshed every 30 minutes, using `AuthToken.refresh_token/1`.
