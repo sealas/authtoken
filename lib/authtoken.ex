@@ -106,7 +106,7 @@ defmodule AuthToken do
   @doc """
   Decrypt an authentication token
 
-  Format "bearer: tokengoeshere" will be accepted and parsed out.
+  Format "bearer: tokengoeshere" and "bearer tokengoeshere" will be accepted and parsed out.
   """
   @spec decrypt_token(Plug.Conn.t) :: {:ok, String.t} | {:error}
   def decrypt_token(%Plug.Conn{} = conn) do
