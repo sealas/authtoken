@@ -119,7 +119,7 @@ defmodule AuthToken do
 
   @spec decrypt_token(String.t) :: {:ok, String.t} | {:error}
   def decrypt_token(headless_token) when is_binary(headless_token) do
-    header = get_jwe() |> OJSON.encode! |> :base64url.encode
+    header = get_jwe() |> OJSON.encode! |> Base.url_encode64(padding: false)
 
     auth_token = header <> "." <> headless_token
 
