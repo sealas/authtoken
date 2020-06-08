@@ -1,6 +1,7 @@
 # Authtoken
 
 [![Travis CI Build Status](https://travis-ci.org/Brainsware/authtoken.svg?branch=master)](https://travis-ci.org/Brainsware/authtoken)
+![Elixir CI](https://github.com/sealas/authtoken/workflows/Elixir%20CI/badge.svg)
 
 Simplified encrypted authentication tokens using JWE.
 
