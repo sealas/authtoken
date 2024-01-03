@@ -19,7 +19,7 @@ defmodule AuthToken.Mixfile do
       maintainers: @maintainers,
       source_url: @github,
       homepage_url: "https://sealas.at",
-      elixir: "~> 1.9",
+      elixir: "~> 1.16",
       start_permanent: Mix.env == :prod,
       elixirc_paths: elixirc_paths(Mix.env),
       deps: deps(),
