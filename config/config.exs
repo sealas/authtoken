@@ -1,6 +1,6 @@
 # This file is responsible for configuring your application
 # and its dependencies with the aid of the Mix.Config module.
-use Mix.Config
+import Config
 
 config :authtoken,
   token_key: <<1, 2, 3, 230, 103, 242, 149, 254, 4, 33, 137, 240, 23, 90, 99, 250>>

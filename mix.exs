@@ -1,14 +1,14 @@
 defmodule AuthToken.Mixfile do
   use Mix.Project
 
-  @version "0.3.3"
+  @version "0.4.0"
 
   @maintainers ["Daniel Khalil"]
   @description """
   Simplified encrypted authentication tokens using JWE.
   """
 
-  @github "https://github.com/Brainsware/authtoken"
+  @github "https://github.com/sealas/authtoken"
 
   def project do
     [
@@ -29,8 +29,7 @@ defmodule AuthToken.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :plug],
-    env: [
+    [env: [
       timeout: 86400,
       refresh: 1800
     ]]
@@ -42,10 +41,10 @@ defmodule AuthToken.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:jose, "~> 1.9"},
+      {:jose, "~> 1.11"},
       {:ojson, "~> 1.0"},
-      {:plug, "~> 1.8"},
-      {:phoenix, "~> 1.4"},
+      {:jason, "~> 1.0"},
+      {:phoenix, "~> 1.7.0"},
 
       {:poison, "~> 4.0", only: :test},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},

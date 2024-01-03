@@ -142,7 +142,7 @@ defmodule AuthToken do
     %{ "alg" => "dir", "enc" => "A128GCM", "typ" => "JWT" }
   end
 
-  @spec get_jwk() :: %JOSE.JWK{}
+  @spec get_jwk() :: %{}
   defp get_jwk do
     get_config(:token_key)
     |> JOSE.JWK.from_oct()
